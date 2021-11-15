@@ -1,0 +1,33 @@
+---
+
+- name: Check if postgres database needs to be seeded
+  community.postgresql.postgresql_query:
+    db: "{{ powerdns_backend_postgres_dbname }}"
+    query: "SELECT * FROM information_schema.tables WHERE table_schema = 'public';"
+    login_user: "{{ powerdns_backend_postgres_user }}"
+    login_password: "{{ powerdns_backend_postgres_password }}"
+    login_unix_socket: "{{ powerdns_backend_postgres_host if powerdns_backend_postgres_host[0] == '/' else omit }}"
+  register: postgres_tables_present
+
+- name: Initialize postgres database
+  when: not postgres_tables_present or postgres_tables_present.rowcount|int == 0
+  block:
+    - name: Copy initial database schema to target server
+      copy:
+        src: schema.pgsql.sql
+        dest: /tmp/powerdns_db_schema.sql
+
+    # `as_single_query` because otherwise, empty lines are failing queries
+    - name: Import database scheme into postgres
+      community.postgresql.postgresql_query:
+        db: "{{ powerdns_backend_postgres_dbname }}"
+        path_to_script: /tmp/powerdns_db_schema.sql
+        as_single_query: true
+        login_user: "{{ powerdns_backend_postgres_user }}"
+        login_password: "{{ powerdns_backend_postgres_password }}"
+        login_unix_socket: "{{ powerdns_backend_postgres_host if powerdns_backend_postgres_host[0] == '/' else omit }}"
+
+    - name: Wipe file containing initial database schema
+      file:
+        path: /tmp/powerdns_db_schema.sql
+        state: absent
