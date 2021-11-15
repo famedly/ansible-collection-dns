@@ -1,0 +1,13 @@
+---
+
+powerdns_container_base_volumes:
+  - "{{ powerdns_config_file }}:{{ powerdns_container_config_file_location }}:ro"
+  - "{{ powerdns_control_socket_path }}:{{ (powerdns_config_chroot + powerdns_config_socket_dir) if powerdns_config_chroot else powerdns_config_socket_dir }}:z"
+
+powerdns_container_base_environment: {}
+powerdns_container_base_labels:
+  VERSION: "{{ powerdns_version }}"
+
+powerdns_container_volumes: "{{ powerdns_container_base_volumes + powerdns_container_extra_volumes }}"
+powerdns_container_environment: "{{ powerdns_container_base_environment | combine(powerdns_container_extra_environment) }}"
+powerdns_container_labels: "{{ powerdns_container_base_labels | combine(powerdns_container_extra_labels) }}"
