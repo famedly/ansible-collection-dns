@@ -1,0 +1,141 @@
+---
+
+powerdns_version: 4.5.2-r1
+powerdns_user: powerdns
+
+powerdns_run_uid: "{{ powerdns_user_info.uid if (powerdns_user_info is defined) else powerdns_user }}"
+powerdns_run_gid: "{{ powerdns_user_info.group if (powerdns_user_info is defined) else powerdns_user }}"
+
+powerdns_base_path: "/opt/powerdns"
+powerdns_config_path: "{{ powerdns_base_path }}/config"
+powerdns_config_file: "{{ powerdns_config_path }}/pdns.conf"
+powerdns_control_socket_path: "{{ powerdns_base_path }}/socket"
+
+powerdns_config_operation_mode: primary
+
+powerdns_config_8bit_dns: false
+# list of CIDR strings
+powerdns_config_allox_axfr_ips: []
+powerdns_config_allow_dnsupdate_from: []
+powerdns_config_allow_notify_from: []
+powerdns_config_allow_unsigned_autoprimary: false
+powerdns_config_allow_unsigned_notify: false
+powerdns_config_also_notify: []
+powerdns_config_any_to_tcp: true
+
+powerdns_config_api: false
+powerdns_config_api_key: ""
+
+powerdns_config_autosecondary: false
+powerdns_config_axfr_fetch_timout: 10
+powerdns_config_axfr_lower_serial: false
+powerdns_config_cache_ttl: 20
+
+# Not set per default in a container
+powerdns_config_chroot: ~
+powerdns_config_config_dir: "{{ powerdns_container_config_dir }}"
+powerdns_config_consistent_backends: true
+powerdns_config_daemon: false
+
+powerdns_config_default_api_rectify: true
+powerdns_config_default_ksk_algorithm: ecdsa256
+powerdns_config_default_ksk_size: ~
+powerdns_config_default_publish_cdnskey:
+powerdns_config_default_publish_cds:
+powerdns_config_default_zsk_algorithm:
+powerdns_config_direct_dnskey: false
+powerdns_config_disable_axfr: false
+powerdns_config_disable_axfr_rectify: false
+powerdns_config_disable_syslog: false
+powerdns_config_distributor_threads: 3
+powerdns_config_dname_processing: false
+powerdns_config_dnssec_key_cache_ttl: 30
+powerdns_config_dnsupdate: false
+
+powerdns_config_edns_cookie_secret: ~
+powerdns_config_edns_subnet_processing: false
+
+powerdns_config_expand_alias: false
+
+# Either 'false', 'true' or 'shared'
+powerdns_config_enable_lua_records: false
+
+powerdns_config_forward_dnsupdate: false
+powerdns_config_forward_notify: []
+powerdns_config_guardian: true
+
+powerdns_config_local_address:
+  - "0.0.0.0"
+  - "::"
+powerdns_config_local_address_nonexist_fail: false
+powerdns_config_local_port: 5300
+
+powerdns_config_log_dns_details: false
+powerdns_config_log_dns_queries: false
+powerdns_config_log_timestamp: true
+powerdns_config_loglevel: 4
+
+powerdns_config_launch: []
+powerdns_config_load_modules: []
+
+powerdns_config_lua_axfr_script: ~
+powerdns_config_lua_dnsupdate_policy_script_path: ~
+
+powerdns_config_primary: "{{ powerdns_config_operation_mode == 'primary' }}"
+powerdns_config_secondary: "{{ powerdns_config_opration_mode == 'secondary' }}"
+
+powerdns_config_default_soa_name: ~
+powerdns_config_default_soa_expire_seconds: "{{ (7 * 24 * 60 * 60)|int }}"
+powerdns_config_default_soa_minimum_ttl: "{{ (60 * 60)|int }}"
+powerdns_config_default_soa_refresh_interval_seconds: "{{ (3 * 60 * 60)|int }}"
+powerdns_config_default_soa_retry_interval_seconds: "{{ (60 * 60)|int }}"
+powerdns_config_default_soa_serial_offset: 0
+powerdns_config_default_ttl: "{{ (60 * 60 )|int }}"
+
+powerdns_config_outgoing_axfr_expand_alias: no
+powerdns_config_resolver: ~
+
+powerdns_config_send_signed_notify: false
+
+powerdns_config_server_id: ~
+powerdns_config_setuid: "{{ powerdns_run_uid }}"
+powerdns_config_setgid: "{{ powerdns_run_gid }}"
+powerdns_config_socket_dir: "/var/run/"
+powerdns_config_version_string: powerdns
+
+powerdns_config_webserver: false
+powerdns_config_webserver_address: 127.0.0.1
+powerdns_config_webserver_allow_from: 127.0.0.1/8
+powerdns_config_webserver_password: ~
+powerdns_config_webserver_loglevel: normal
+powerdns_config_webserver_max_bodysize_mb: 2
+powerdns_config_webserver_port: 8081
+
+powerdns_config_query_local_address: ~
+
+powerdns_default_backend: postgres
+powerdns_backend_postgres_host:
+powerdns_backend_postgres_port: ~
+powerdns_backend_postgres_dbname: ~
+powerdns_backend_postgres_user: ~
+powerdns_backend_postgres_password: ~
+powerdns_backend_postgres_dnssec: true
+powerdns_backend_postgres_use_prepared_statements: true
+
+powerdns_container_image_name: "registry.gitlab.com/famedly/company/devops/containers/powerdns"
+powerdns_container_image_tag: ~
+powerdns_container_image_ref: "{{ powerdns_container_image_name }}:{{ powerdns_container_image_tag | default('v' + powerdns_version, True) }}"
+powerdns_container_name: powerdns
+powerdns_container_extra_volumes: []
+powerdns_container_extra_environment: {}
+powerdns_container_extra_labels: {}
+powerdns_container_ports: []
+powerdns_container_networks: []
+powerdns_container_network_mode: default
+powerdns_container_restart_policy: "unless-stopped"
+powerdns_container_run_user: "{{ powerdns_run_uid }}:{{ powerdns_run_gid }}"
+powerdns_container_capabilities:
+  - net_bind_service
+
+powerdns_container_config_dir: "/etc/pdns"
+powerdns_container_config_file_location: "{{ powerdns_container_config_dir }}/pdns.conf"

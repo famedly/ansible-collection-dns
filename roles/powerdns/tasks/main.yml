@@ -1,0 +1,70 @@
+---
+
+- name: Ensure system user '{{ powerdns_user }}' for powerdns exists
+  user:
+    name: "{{ powerdns_user }}"
+    state: present
+    system: yes
+  register: powerdns_user_info
+
+- name: Ensure base path '{{ powerdns_base_path }}' exists
+  file:
+    path: "{{ powerdns_base_path }}"
+    state: directory
+    owner: "{{ powerdns_run_uid }}"
+    group: "{{ powerdns_run_gid }}"
+    mode: "0750"
+
+- name: Ensure config path '{{ powerdns_base_path }}' exists
+  file:
+    path: "{{ powerdns_config_path }}"
+    state: directory
+    owner: "{{ powerdns_run_uid }}"
+    group: "{{ powerdns_run_gid }}"
+    mode: "0750"
+
+- name: Ensure path '{{ powerdns_control_socket_path }}' for powerdns' control socket exists
+  file:
+    path: "{{ powerdns_control_socket_path }}"
+    state: directory
+    owner: "{{ powerdns_run_uid }}"
+    group: "{{ powerdns_run_gid }}"
+    mode: "0750"
+
+- name: Ensure config file is templated
+  template:
+    src: pdns.conf.j2
+    dest: "{{ powerdns_config_file }}"
+    owner: "{{ powerdns_run_uid }}"
+    group: "{{ powerdns_run_gid }}"
+    mode: "0640"
+  notify: restart-powerdns
+
+- name: Ensure docker image is available locally
+  docker_image:
+    name: "{{ powerdns_container_image_ref }}"
+    state: present
+    source: pull
+    force_source: "{{ powerdns_container_image_force_pull | default((powerdns_container_image_tag is defined) | bool) }}"
+  register: powerdns_docker_image_info
+  until: powerdns_docker_image_info is success
+  retries: 10
+  delay: 5
+
+- name: Make sure the database is populated with the needed tables
+  import_tasks: seed-database.yml
+
+- name: Ensure docker container with name '{{ powerdns_container_name }}' is started
+  docker_container:
+    name: "{{ powerdns_container_name }}"
+    image: "{{ powerdns_container_image_ref }}"
+    volumes: "{{ powerdns_container_volumes }}"
+    labels: "{{ powerdns_container_labels }}"
+    env: "{{ powerdns_container_environment }}"
+    user: "{{ powerdns_container_run_user | default(omit, True) }}"
+    capabilities: "{{ powerdns_container_capabilities }}"
+    ports: "{{ powerdns_container_ports }}"
+    networks: "{{ powerdns_container_networks }}"
+    network_mode: "{{ powerdns_container_network_mode }}"
+    restart_policy: "{{ powerdns_container_restart_policy }}"
+    state: started
