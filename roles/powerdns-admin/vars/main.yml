@@ -1,0 +1,12 @@
+---
+
+powerdns_admin_container_base_volumes:
+  - "{{ powerdns_admin_data_path }}:/data:z"
+
+powerdns_admin_container_base_environment: {}
+powerdns_admin_container_base_labels:
+  VERSION: "{{ powerdns_admin_version }}"
+
+powerdns_admin_container_volumes: "{{ powerdns_admin_container_base_volumes + powerdns_admin_container_extra_volumes }}"
+powerdns_admin_container_environment: "{{ powerdns_admin_container_base_environment | combine(powerdns_admin_container_extra_environment) }}"
+powerdns_admin_container_labels: "{{ powerdns_admin_container_base_labels | combine(powerdns_admin_container_extra_labels) }}"

@@ -1,0 +1,21 @@
+---
+
+powerdns_admin_version: 0.2.4
+powerdns_admin_user: powerdns-admin
+
+powerdns_admin_run_uid: "{{ powerdns_admin_user_info.uid if (powerdns_admin_user_info is defined) else powerdns_admin_user }}"
+powerdns_admin_run_gid: "{{ powerdns_admin_user_info.group if (powerdns_admin_user_info is defined) else powerdns_admin_user }}"
+
+powerdns_admin_base_path: "/opt/powerdns-admin"
+powerdns_admin_data_path: "/opt/powerdns-admin/data"
+
+powerdns_admin_container_image_name: "docker.io/ngoduykhanh/powerdns-admin"
+powerdns_admin_container_image_tag: ~
+powerdns_admin_container_image_ref: "{{ powerdns_admin_container_image_name }}:{{ powerdns_admin_container_image_tag | default('v' + powerdns_admin_version, True) }}"
+powerdns_admin_container_name: powerdns-admin
+powerdns_admin_container_extra_volumes: []
+powerdns_admin_container_extra_environment: {}
+powerdns_admin_container_extra_labels: {}
+powerdns_admin_container_ports: []
+powerdns_admin_container_networks: []
+powerdns_admin_container_restart_policy: "unless-stopped"
