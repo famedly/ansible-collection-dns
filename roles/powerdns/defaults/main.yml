@@ -73,6 +73,14 @@ powerdns_config_load_modules: []
 powerdns_config_primary: "{{ powerdns_config_operation_mode == 'primary' }}"
 powerdns_config_secondary: "{{ powerdns_config_opration_mode == 'secondary' }}"
 
+powerdns_config_default_soa_name: ~
+powerdns_config_default_soa_expire_seconds: "{{ (7 * 24 * 60 * 60)|int }}"
+powerdns_config_default_soa_minimum_ttl: "{{ (60 * 60)|int }}"
+powerdns_config_default_soa_refresh_interval_seconds: "{{ (3 * 60 * 60)|int }}"
+powerdns_config_default_soa_retry_interval_seconds: "{{ (60 * 60)|int }}"
+powerdns_config_default_soa_serial_offset: 0
+powerdns_config_default_ttl: "{{ (60 * 60 )|int }}"
+
 powerdns_config_server_id: ~
 powerdns_config_setuid: "{{ powerdns_run_uid }}"
 powerdns_config_setgid: "{{ powerdns_run_gid }}"
@@ -86,6 +94,8 @@ powerdns_config_webserver_password: ~
 powerdns_config_webserver_loglevel: normal
 powerdns_config_webserver_max_bodysize_mb: 2
 powerdns_config_webserver_port: 8081
+
+powerdns_config_query_local_address: ~
 
 powerdns_default_backend: postgres
 powerdns_backend_postgres_host:

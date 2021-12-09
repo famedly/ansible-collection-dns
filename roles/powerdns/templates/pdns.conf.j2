@@ -49,12 +49,14 @@ daemon={{ 'yes' if powerdns_config_daemon else 'no' }}
 #################################
 # default-soa-name	name to insert in the SOA record if none set in the backend
 #
-# default-soa-name=a.misconfigured.powerdns.server
+{% if powerdns_config_default_soa_name %}
+default-soa-name={{ powerdns_config_default_soa_name }}
+{% endif %}
 
 #################################
 # default-ttl	Seconds a result is valid if not set otherwise
 #
-# default-ttl=3600
+default-ttl={{ powerdns_config_default_ttl }}
 
 #################################
 # disable-axfr	Disable zonetransfers but do allow TCP queries
@@ -192,7 +194,9 @@ negquery-cache-ttl=60
 #################################
 # query-local-address	Source IP address for sending queries
 #
-# query-local-address=
+{% if powerdns_config_query_local_address %}
+query-local-address={{ powerdns_config_query_local_address }}
+{% endif %}
 
 #################################
 # query-logging	Hint backends that queries should be logged
@@ -253,27 +257,38 @@ secondary={{ 'no' if powerdns_config_operation_mode == 'primary' else 'yes' }}
 #################################
 # soa-expire-default	Default SOA expire
 #
-# soa-expire-default=604800
+{% if powerdns_config_default_soa_expire %}
+soa-expire-default=604800
+{% endif %}
 
 #################################
 # soa-minimum-ttl	Default SOA mininum ttl
 #
 # soa-minimum-ttl=3600
+{% if powerdns_config_default_soa_minimum_ttl %}
+soa-minimum-ttl={{ powerdns_config_default_soa_minimum_ttl }}
+{% endif %}
 
 #################################
 # soa-refresh-default	Default SOA refresh
 #
-# soa-refresh-default=10800
+{% if powerdns_config_default_soa_refresh_interval_seconds %}
+soa-refresh-default={{ powerdns_config_default_soa_refresh_interval_seconds }}
+{% endif %}
 
 #################################
 # soa-retry-default	Default SOA retry
 #
-# soa-retry-default=3600
+{% if powerdns_config_default_soa_retry_interval_seconds %}
+soa-retry-default={{ powerdns_config_default_soa_retry_interval_seconds }}
+{% endif %}
 
 #################################
 # soa-serial-offset	Make sure that no SOA serial is less than this number
 #
-# soa-serial-offset=0
+{% if powerdns_config_default_soa_serial_offset %}
+soa-serial-offset={{ powerdns_config_default_soa_serial_offset }}
+{% endif %}
 
 #################################
 # socket-dir	Where the controlsocket will live
@@ -298,7 +313,9 @@ socket-dir={{ powerdns_config_socket_dir }}
 #################################
 # version-string	PowerDNS version in packets - full, anonymous, powerdns or custom
 #
-# version-string=full
+{% if powerdns_config_version_string %}
+version-string={{ powerdns_config_version_string }}
+{% endif %}
 
 #################################
 # webserver	Start a webserver for monitoring
