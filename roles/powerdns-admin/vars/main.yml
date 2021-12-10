@@ -1,0 +1,40 @@
+---
+
+powerdns_admin_container_base_volumes:
+  - "{{ powerdns_admin_data_path }}:/data:z"
+
+powerdns_admin_container_base_environment:
+  SQLALCHEMY_DATABASE_URI: >-
+    {{ powerdns_admin_database_type + '://'
+    + powerdns_admin_database_user
+    + ( ':' + powerdns_admin_database_password if powerdns_admin_database_password else '' ) + '@'
+    + powerdns_admin_database_host|default('', True) + '/'
+    + powerdns_admin_database_name
+    + ('?host=' + powerdns_admin_database_socket) if powerdns_admin_database_socket else '' }}
+powerdns_admin_container_base_labels:
+  VERSION: "{{ powerdns_admin_version }}"
+
+powerdns_admin_container_volumes: "{{ powerdns_admin_container_base_volumes + powerdns_admin_container_extra_volumes }}"
+powerdns_admin_container_environment: "{{ powerdns_admin_container_base_environment | combine(powerdns_admin_container_extra_environment) }}"
+powerdns_admin_container_labels: "{{ powerdns_admin_container_base_labels | combine(powerdns_admin_container_extra_labels) }}"
+
+powerdns_admin_settings:
+  pdns_api_url: "{{ powerdns_admin_api_url }}"
+  pdns_api_key: "{{ powerdns_admin_api_key }}"
+  pdns_version: "{{ powerdns_admin_api_version }}"
+  local_db_enabled: "{{ powerdns_admin_auth_local_enabled }}"
+  signup_enabled: "{{ powerdns_admin_auth_local_signup_enabled }}"
+  ldap_enabled: "{{ powerdns_admin_ldap_enabled | bool }}"
+  ldap_type: "{{ powerdns_admin_ldap_type }}"
+  ldap_uri: "{{ powerdns_admin_ldap_uri }}"
+  ldap_base_dn: "{{ powerdns_admin_ldap_base_dn }}"
+  ldap_admin_username: "{{ powerdns_admin_ldap_bind_user }}"
+  ldap_admin_password: "{{ powerdns_admin_ldap_bind_password }}"
+  ldap_filter_basic: "{{ powerdns_admin_ldap_user_filter }}"
+  ldap_filter_group: "{{ powerdns_admin_ldap_group_filter }}"
+  ldap_filter_username: "{{ powerdns_admin_ldap_user_name_attribute }}"
+  ldap_filter_groupname: "{{ powerdns_admin_ldap_group_member_attribute }}"
+  ldap_admin_group: "{{ powerdns_admin_ldap_group_admins }}"
+  ldap_operator_group: "{{ powerdns_admin_ldap_group_operators }}"
+  ldap_user_group: "{{ powerdns_admin_ldap_group_users }}"
+  ldap_sg_enabled: "{{ true if powerdns_admin_ldap_group_admins else false }}"

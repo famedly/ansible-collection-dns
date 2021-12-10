@@ -1,0 +1,50 @@
+---
+
+powerdns_admin_version: 0.2.4
+powerdns_admin_user: powerdns-admin
+
+powerdns_admin_run_uid: "{{ powerdns_admin_user_info.uid if (powerdns_admin_user_info is defined) else powerdns_admin_user }}"
+powerdns_admin_run_gid: "{{ powerdns_admin_user_info.group if (powerdns_admin_user_info is defined) else powerdns_admin_user }}"
+
+powerdns_admin_base_path: "/opt/powerdns-admin"
+powerdns_admin_data_path: "/opt/powerdns-admin/data"
+
+powerdns_admin_container_image_name: "docker.io/ngoduykhanh/powerdns-admin"
+powerdns_admin_container_image_tag: ~
+powerdns_admin_container_image_ref: "{{ powerdns_admin_container_image_name }}:{{ powerdns_admin_container_image_tag | default('v' + powerdns_admin_version, True) }}"
+powerdns_admin_container_name: powerdns-admin
+powerdns_admin_container_extra_volumes: []
+powerdns_admin_container_extra_environment: {}
+powerdns_admin_container_extra_labels: {}
+powerdns_admin_container_ports: []
+powerdns_admin_container_networks: []
+powerdns_admin_container_restart_policy: "unless-stopped"
+
+powerdns_admin_api_url: ~
+powerdns_admin_api_key: ~
+powerdns_admin_api_version: ~
+
+powerdns_admin_auth_local_enabled: true
+powerdns_admin_auth_local_signup_enabled: false
+
+powerdns_admin_ldap_enabled: false
+powerdns_admin_ldap_type: ldap
+powerdns_admin_ldap_uri: ~
+powerdns_admin_ldap_base_dn: ~
+powerdns_admin_ldap_bind_user: ~
+powerdns_admin_ldap_bind_password: ~
+powerdns_admin_ldap_user_base_dn: ~
+powerdns_admin_ldap_user_filter: ~
+powerdns_admin_ldap_group_filter: "(objectClass=groupOfNames)"
+powerdns_admin_ldap_user_name_attribute: uid
+powerdns_admin_ldap_group_member_attribute: member
+powerdns_admin_ldap_group_admins: "cn=admins,ou=groups,{{ powerdns_admin_ldap_base_dn }}"
+powerdns_admin_ldap_group_operators: "cn=operators,ou=groups,{{ powerdns_admin_ldap_base_dn }}"
+powerdns_admin_ldap_group_users: "cn=users,ou=groups,{{ powerdns_admin_ldap_base_dn }}"
+
+powerdns_database_type: postgres
+powerdns_database_user: pdns-admin
+powerdns_database_password: ~
+powerdns_database_name: pdns-admin
+powerdns_database_host: ~
+powerdns_database_socket: ~
