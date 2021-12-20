@@ -1,0 +1,18 @@
+---
+
+- name: Configure account '{{ powerdns_account_slug }}'
+  postgresql_query:
+    login_host: "{{ powerdns_account_database_host }}"
+    login_user: "{{ powerdns_account_database_user }}"
+    login_password: "{{ powerdns_account_database_password }}"
+    db: "{{ powerdns_account_database_name }}"
+    query: >-
+      INSERT INTO account ( name, description, contact, mail )
+      VALUES ( '{{ powerdns_account_slug }}', '{{ powerdns_account_description }}', '{{ powerdns_account_contact_person }}', '{{ powerdns_account_contact_email }}' )
+      ON CONFLICT ( name )
+      DO UPDATE SET "description" = '{{ powerdns_account_description }}', "contact" = '{{ powerdns_account_contact_person }}', "mail" = '{{ powerdns_account_contact_email }}'
+      WHERE account.name = '{{ powerdns_account_slug }}' and
+        (account.description != '{{ powerdns_account_description }}'
+        or account.contact != '{{ powerdns_account_contact_person }}'
+        or account.mail != '{{ powerdns_account_contact_email }}');
+  when: powerdns_account_database_type == 'postgres' and item.value is not none

@@ -1,0 +1,14 @@
+---
+
+powerdns_account_slug: ~
+powerdns_account_description: ~
+powerdns_account_contact_person: ~
+powerdns_account_contact_email: ~
+powerdns_account_members: []
+powerdns_account_purge_additional_members: false
+
+powerdns_account_database_type: postgres
+powerdns_account_database_user: pdns-admin
+powerdns_account_database_password: ~
+powerdns_account_database_name: pdns-admin
+powerdns_account_database_host: ~
