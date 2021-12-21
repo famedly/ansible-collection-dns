@@ -1,0 +1,16 @@
+---
+
+powerdns_zone_name: ~
+powerdns_zone_type: ~
+powerdns_zone_account: ~
+powerdns_zone_metadata:
+  SOA-EDIT-API: DEFAULT
+  ALLOW-AXFR-FROM: AUTO-NS
+powerdns_zone_master_ip: ~
+powerdns_zone_soa_content: ~
+
+powerdns_zone_database_type: postgres
+powerdns_zone_database_user: pdns
+powerdns_zone_database_password: ~
+powerdns_zone_database_name: pdns
+powerdns_zone_database_host: ~
