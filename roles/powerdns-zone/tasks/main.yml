@@ -1,0 +1,79 @@
+---
+
+- name: Configure zone '{{ powerdns_zone_name }}'
+  postgresql_query:
+    login_host: "{{ powerdns_zone_database_host }}"
+    login_user: "{{ powerdns_zone_database_user }}"
+    login_password: "{{ powerdns_zone_database_password }}"
+    db: "{{ powerdns_zone_database_name }}"
+    query: >-
+      INSERT INTO domains (name, type, account)
+      VALUES ( '{{ powerdns_zone_name }}', '{{ powerdns_zone_type }}', '{{ powerdns_zone_account }}' )
+      ON CONFLICT ( name )
+      DO UPDATE SET "type" = '{{ powerdns_zone_type }}', "account" = '{{ powerdns_zone_account }}'
+      WHERE domains.name = '{{ powerdns_zone_name }}' and
+        (domains.type != '{{ powerdns_zone_type }}'
+        or domains.account != '{{ powerdns_zone_account }}');
+      SELECT * FROM domains WHERE name = '{{ powerdns_zone_name }}';
+  when: powerdns_zone_database_type == 'postgres'
+  register: zone_upsert_result
+
+- name: Extract internal domain_id for zone
+  set_fact:
+    zone_domain_id: "{{ zone_upsert_result.query_result[0].id }}"
+
+- name: Create unique index (domain_id, kind) on domainmetadata table
+  postgresql_idx:
+    login_host: "{{ powerdns_zone_database_host }}"
+    login_user: "{{ powerdns_zone_database_user }}"
+    login_password: "{{ powerdns_zone_database_password }}"
+    db: "{{ powerdns_zone_database_name }}"
+    table: domainmetadata
+    columns:
+      - domain_id
+      - kind
+    name: domainmetadata_domain_kind_uniq
+    type: btree
+    unique: yes
+  when: powerdns_zone_database_type == 'postgres'
+
+- name: Configure zone metadata for '{{ powerdns_zone_name }}'
+  postgresql_query:
+    login_host: "{{ powerdns_zone_database_host }}"
+    login_user: "{{ powerdns_zone_database_user }}"
+    login_password: "{{ powerdns_zone_database_password }}"
+    db: "{{ powerdns_zone_database_name }}"
+    query: >-
+      INSERT INTO domainmetadata (domain_id, kind, content)
+      VALUES ( '{{ zone_domain_id }}', '{{ item.key }}', '{{ item.value }}' )
+      ON CONFLICT ( domain_id, kind )
+      DO UPDATE SET "content" = '{{ item.value }}'
+      WHERE domainmetadata.domain_id = '{{ zone_domain_id }}' and domainmetadata.kind = '{{ item.key }}' and domainmetadata.content != '{{ item.value }}';
+  loop: "{{ powerdns_zone_metadata | dict2items }}"
+  loop_control: { label: "{{ item.key }} = {{ item.value }}" }
+  when: powerdns_zone_database_type == 'postgres'
+
+- name: Check if SOA record for zone '{{ powerdns_zone_name }}' exists
+  postgresql_query:
+    login_host: "{{ powerdns_zone_database_host }}"
+    login_user: "{{ powerdns_zone_database_user }}"
+    login_password: "{{ powerdns_zone_database_password }}"
+    db: "{{ powerdns_zone_database_name }}"
+    query: >-
+      SELECT * FROM records
+      WHERE records.domain_id = '{{ zone_domain_id }}'
+        and records.name = '{{ powerdns_zone_name }}'
+        and records.type = 'SOA';
+  changed_when: false
+  register: zone_records_type_soa
+
+- name: Configure SOA record for zone '{{ powerdns_zone_name }}'
+  postgresql_query:
+    login_host: "{{ powerdns_zone_database_host }}"
+    login_user: "{{ powerdns_zone_database_user }}"
+    login_password: "{{ powerdns_zone_database_password }}"
+    db: "{{ powerdns_zone_database_name }}"
+    query: >-
+      INSERT INTO records (domain_id, name, type, content, ttl, prio, disabled, auth)
+      VALUES ( '{{ zone_domain_id }}', '{{ powerdns_zone_name }}', 'SOA', '{{ powerdns_zone_soa_content }}', 3600, 0, false, true)
+  when: powerdns_zone_database_type == 'postgres' and zone_records_type_soa.rowcount|int == 0
