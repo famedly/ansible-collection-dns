@@ -5,7 +5,7 @@
 ## Configuration
 
 Most configuration options from
-[PowerDNSs' Authorative Server Settings](https://doc.powerdns.com/authoritative/settings.html)
+[PowerDNSs' Authoritative Server Settings](https://doc.powerdns.com/authoritative/settings.html)
 are available by setting `powerdns_config_$option`, where
 `$option` is written in `snake_case`.
 

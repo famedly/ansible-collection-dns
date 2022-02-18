@@ -12,7 +12,7 @@ need to be known, optionally the associated powerdns account.
 A sample configuration is given below for setting up `demo.famedly.de`:
 
 ```yaml
-- hosts: [dns_authorative]
+- hosts: [dns_authoritative]
   roles:
     - name: powerdns-zone
       vars:
