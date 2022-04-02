@@ -27,7 +27,7 @@ module: update
 author:
 - Johanna Dorothea Reichmann (transcaffeine@finally.coffee)
 requirements:
-    - python >= 3.10
+    - python >= 3.9
     - dnspython >= 2.1.0
 short_description: Update DNS records using DNSUPDATE (RFC2136)
 description:

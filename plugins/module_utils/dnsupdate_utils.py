@@ -10,6 +10,8 @@ from socket import create_connection
 
 from dns import name, message, rcode, resolver, tsigkeyring, rrset, update, query
 
+from typing import Union
+
 # Uses system /etc/resolv.conf
 default_resolver = resolver.Resolver()
 
@@ -59,7 +61,7 @@ def get_resource_record(rr: ResourceRecord, _resolver: resolver.Resolver) -> lis
   except (resolver.NXDOMAIN, resolver.NoAnswer):
     return []
 
-def send_dns_update_message(zone: str, keyring: dict[name.Name, bytes], rr_set: list[ResourceRecord], server_ip: str) -> tuple[bool, str | None]:
+def send_dns_update_message(zone: str, keyring: dict[name.Name, bytes], rr_set: list[ResourceRecord], server_ip: str) -> tuple[bool, Union[str, None]]:
   updateMessage = update.UpdateMessage(zone, keyring=keyring)
   for rr in rr_set.add:
     updateMessage.add(rr.name, rr.ttl, rr.typ, rr.content)
@@ -72,30 +74,30 @@ def send_dns_update_message(zone: str, keyring: dict[name.Name, bytes], rr_set: 
   else:
     return (True, "No changes performed")
 
-def process_dns_update_answer(response: message.Message, zone: str, ip: str) -> tuple[bool, str|None]:
-    match response.rcode():
-        case rcode.NOERROR:
-            return (True, None)
-        case rcode.SERVFAIL:
-            return (False, f"DNSUPDATE failed with SERVFAIL")
-        case rcode.NXDOMAIN:
-            return (False, f"Domain {zone} not known by server {ip}")
-        case rcode.NOTIMP:
-            return (False, f"DNSUPDATE not implemented by server {ip}")
-        case rcode.REFUSED:
-            return (False, f"DNSUPDATE refused by server {ip}")
-        case rcode.NOTAUTH:
-            return (False, f"Server {ip} is not authoritative for {zone}")
-        case rcode.NOTZONE:
-            return (False, f"Atleast one record is not in {zone}")
-        case rcode.BADSIG:
-            return (False, f"General TSIG signature failure")
-        case rcode.BADKEY:
-            return (False, f"TSIG Key is not recognized by server")
-        case rcode.BADALG:
-            return (False, f"TSIG Algorithm not supported by server")
-        case _:
-            return (False, f"Encountered rcode {response.rcode()} ({str(rcode.from_text(response.rcode()))})")
+def process_dns_update_answer(response: message.Message, zone: str, ip: str) -> tuple[bool, Union[str, None]]:
+  response_rcode = response.rcode()
+  if response_rcode == rcode.NOERROR:
+    return (True, None)
+  elif response_rcode == rcode.SERVFAIL:
+    return (False, f"DNSUPDATE failed with SERVFAIL")
+  elif response_rcode == rcode.NXDOMAIN:
+    return (False, f"Domain {zone} not known by server {ip}")
+  elif response_rcode == rcode.NOTIMP:
+    return (False, f"DNSUPDATE not implemented by server {ip}")
+  elif response_rcode == rcode.REFUSED:
+    return (False, f"DNSUPDATE refused by server {ip}")
+  elif response_rcode == rcode.NOTAUTH:
+    return (False, f"Server {ip} is not authoritative for {zone}")
+  elif response_rcode == rcode.NOTZONE:
+    return (False, f"Atleast one record is not in {zone}")
+  elif response_rcode == rcode.BADSIG:
+    return (False, f"General TSIG signature failure")
+  elif response_rcode == rcode.BADKEY:
+    return (False, f"TSIG Key is not recognized by server")
+  elif response_rcode == rcode.BADALG:
+    return (False, f"TSIG Algorithm not supported by server")
+  else:
+    return (False, f"Encountered rcode {response_rcode} ({str(rcode.from_text(response_rcode))})")
 
 def get_resolver_for_ip(ip: str) -> resolver.Resolver:
   resolver_cache = resolver.Cache(cleaning_interval=10)
@@ -104,12 +106,12 @@ def get_resolver_for_ip(ip: str) -> resolver.Resolver:
   _resolver.cache = resolver_cache
   return _resolver
 
-def primary_master_to_ip_literal(primary_master: str) -> str | None:
+def primary_master_to_ip_literal(primary_master: str) -> Union[str, None]:
   if is_ip_literal(primary_master):
     return primary_master
   return resolve_domain_name(primary_master)
-    
-def resolve_domain_name(name: str) -> str | None:
+
+def resolve_domain_name(name: str) -> Union[str, None]:
   answer = None
   sock = None
   try:
