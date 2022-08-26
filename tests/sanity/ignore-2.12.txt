@@ -1,0 +1,1 @@
+plugins/modules/update.py validate-modules:missing-gplv3-license # ignore license check
