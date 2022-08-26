@@ -1,16 +1,17 @@
-#!/usr/bin/python
 # coding: utf-8
+from __future__ import absolute_import, division, print_function
 
 # (c) 2021, Johanna Dorothea Reichmann <transcaffeine@finally.coffee>
 # (c) 2021, Famedly GmbH
 # GNU Affero General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/agpl-3.0.txt)
+__metaclass__ = type
+
 import ipaddress
 from dataclasses import dataclass, field
 from socket import create_connection
-
-from dns import name, message, rcode, resolver, tsigkeyring, rrset, update, query
-
 from typing import Union
+
+from dns import name, message, rcode, resolver, tsigkeyring, update, query
 
 # Uses system /etc/resolv.conf
 default_resolver = resolver.Resolver()
@@ -100,25 +101,25 @@ def process_dns_update_answer(
 ) -> tuple[bool, Union[str, None]]:
     response_rcode = response.rcode()
     if response_rcode == rcode.NOERROR:
-        return (True, None)
+        return True, None
     elif response_rcode == rcode.SERVFAIL:
-        return (False, f"DNSUPDATE failed with SERVFAIL")
+        return False, "DNSUPDATE failed with SERVFAIL"
     elif response_rcode == rcode.NXDOMAIN:
-        return (False, f"Domain {zone} not known by server {ip}")
+        return False, f"Domain {zone} not known by server {ip}"
     elif response_rcode == rcode.NOTIMP:
-        return (False, f"DNSUPDATE not implemented by server {ip}")
+        return False, f"DNSUPDATE not implemented by server {ip}"
     elif response_rcode == rcode.REFUSED:
-        return (False, f"DNSUPDATE refused by server {ip}")
+        return False, f"DNSUPDATE refused by server {ip}"
     elif response_rcode == rcode.NOTAUTH:
-        return (False, f"Server {ip} is not authoritative for {zone}")
+        return False, f"Server {ip} is not authoritative for {zone}"
     elif response_rcode == rcode.NOTZONE:
-        return (False, f"Atleast one record is not in {zone}")
+        return False, f"Atleast one record is not in {zone}"
     elif response_rcode == rcode.BADSIG:
-        return (False, f"General TSIG signature failure")
+        return False, "General TSIG signature failure"
     elif response_rcode == rcode.BADKEY:
-        return (False, f"TSIG Key is not recognized by server")
+        return False, "TSIG Key is not recognized by server"
     elif response_rcode == rcode.BADALG:
-        return (False, f"TSIG Algorithm not supported by server")
+        return False, "TSIG Algorithm not supported by server"
     else:
         return (
             False,
@@ -156,7 +157,7 @@ def resolve_domain_name(name: str) -> Union[str, None]:
     finally:
         if sock:
             sock.close()
-        return answer
+    return answer
 
 
 def is_ip_literal(ip: str) -> bool:

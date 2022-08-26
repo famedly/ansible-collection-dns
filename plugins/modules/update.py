@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # coding: utf-8
+from __future__ import absolute_import, division, print_function
 
 # (c) 2021, Johanna Dorothea Reichmann <transcaffeine@finally.coffee>
 # (c) 2021, Famedly GmbH
@@ -7,26 +8,11 @@
 
 __metaclass__ = type
 
-import traceback
-from ansible.module_utils.basic import AnsibleModule, missing_required_lib
-
-from dataclasses import asdict
-
-LIB_IMP_ERR = None
-try:
-    from ansible_collections.famedly.dns.plugins.module_utils.dnsupdate_utils import *
-
-    HAS_LIB = True
-except:
-    HAS_LIB = False
-    LIB_IMP_ERR = traceback.format_exc()
-
-
 DOCUMENTATION = r"""
 ---
 module: update
 author:
-- Johanna Dorothea Reichmann (transcaffeine@finally.coffee)
+- Johanna Dorothea Reichmann (@jdreichmann)
 requirements:
     - python >= 3.9
     - dnspython >= 2.1.0
@@ -43,8 +29,28 @@ options:
         type: str
         required: true
     rr_set:
-        description: A list of dicts of the form {name, type, content, ?ttl} describing the set of resource records to modify. Note that the content _always_ needs to be fully qualified or idempotency can not be guaranteed, the module will not attempt to make names in the content absolute.
-        type: list[dict[str, any]]
+        description: A list of dicts of the form {name, type, content, ?ttl}
+                     describing the set of resource records to modify.
+                     Note that the content _always_ needs to be fully qualified or idempotency can not be guaranteed,
+                     the module will not attempt to make names in the content absolute.
+        type: dict
+        suboptions:
+            name:
+                description: beep
+                type: str
+                required: true
+            type:
+                description: beep
+                type: str
+                required: true
+            content:
+                description: beep
+                type: str
+                required: true
+            ttl:
+                description: beep
+                type: int
+                default: 3600
         required: true
     tsig_key:
         description: The TSIG key to use to sign the transaction
@@ -57,9 +63,10 @@ options:
     tsig_name:
         description: The TSIG key's name
         type: str
+        default: default
         required: false
     state:
-        description: Wether to add or remove the records, or make sure the zone matches the provided recordset exactly
+        description: Whether to add or remove the records, or make sure the zone matches the provided recordset exactly
         type: str
         choices: [present, absent, exact]
         default: present
@@ -91,37 +98,58 @@ added:
     description: The added records
     returned: When records were added to the zone
     type: list
-    elements: dict[str, str]
+    elements: dict
 deleted:
     description: The deleted records
     returned: When records were deleted from the zone
     type: list
-    elements: dict[str, str]
+    elements: dict
 
 """
 
+import traceback
+from ansible.module_utils.basic import AnsibleModule, missing_required_lib
+
+from dataclasses import asdict
+
+LIB_IMP_ERR = None
+try:
+    from ansible_collections.famedly.dns.plugins.module_utils.dnsupdate_utils import (
+        ResourceRecord,
+        make_rr_set_absolute,
+        primary_master_to_ip_literal,
+        get_resource_records,
+        get_resolver_for_ip,
+        get_diff_rr_set,
+        send_dns_update_message,
+        get_keyring,
+    )
+
+    HAS_LIB = True
+except ImportError:
+    HAS_LIB = False
+    LIB_IMP_ERR = traceback.format_exc()
+
 
 def main():
-    _ = dict
     module = AnsibleModule(
-        argument_spec=_(
-            zone=_(required=True, type="str"),
-            primary_master=_(required=True, type="str"),
-            tsig_name=_(type="str", required=False, default="default"),
-            tsig_key=_(required=True, type="str", no_log=True),
-            tsig_algo=_(required=True, type="str"),
-            rr_set=_(
+        argument_spec=dict(
+            zone=dict(required=True, type="str"),
+            primary_master=dict(required=True, type="str"),
+            tsig_name=dict(type="str", required=False, default="default"),
+            tsig_key=dict(required=True, type="str", no_log=True),
+            tsig_algo=dict(required=True, type="str"),
+            rr_set=dict(
                 required=True,
-                type="list",
-                elements="dict",
-                options=_(
-                    type=_(type="str", required=True),
-                    name=_(type="str", required=True),
-                    content=_(type="str", required=True),
-                    ttl=_(type="int", required=False, default=3600),
+                type="dict",
+                options=dict(
+                    type=dict(type="str", required=True),
+                    name=dict(type="str", required=True),
+                    content=dict(type="str", required=True),
+                    ttl=dict(type="int", required=False, default=3600),
                 ),
             ),
-            state=_(
+            state=dict(
                 type="str",
                 required=False,
                 default="present",
@@ -131,12 +159,12 @@ def main():
         supports_check_mode=True,
     )
 
-    result = _(changed=False, diff={}, message="")
+    result = dict(changed=False, diff={}, message="")
 
     failed = False
 
     if not HAS_LIB:
-        module.fail_json(msg=missing_required_lib("dns"), exception=LIB_IMP_ERR)
+        module.fail_json(msg=missing_required_lib("dnspython"), exception=LIB_IMP_ERR)
 
     zone: str = module.params["zone"]
     target_state = [
