@@ -121,7 +121,7 @@ def main():
     result = _(
         changed=False,
         diff={},
-        message=''
+        msg=''
     )
 
     failed = False
@@ -137,7 +137,7 @@ def main():
     server_ip: str = primary_master_to_ip_literal(module.params['primary_master'])
     if not server_ip:
       failed = True
-      result['message'] = f"No reachable IP or IPv4 address found for {module.params['primary_master']}, connection probing done with port 53/tcp."
+      result['msg'] = f"No reachable IP or IPv4 address found for {module.params['primary_master']}, connection probing done with port 53/tcp."
       module.fail_json(**result)
 
     # Get existing RRs first
