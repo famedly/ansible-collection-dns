@@ -122,7 +122,7 @@ powerdns_backend_postgres_password: ~
 powerdns_backend_postgres_dnssec: true
 powerdns_backend_postgres_use_prepared_statements: true
 
-powerdns_container_image_name: "registry.gitlab.com/famedly/company/devops/containers/powerdns"
+powerdns_container_image_name: "registry.gitlab.com/famedly/infra/containers/powerdns"
 powerdns_container_image_tag: ~
 powerdns_container_image_ref: "{{ powerdns_container_image_name }}:{{ powerdns_container_image_tag | default('v' + powerdns_version, True) }}"
 powerdns_container_name: powerdns
