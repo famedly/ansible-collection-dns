@@ -1,6 +1,6 @@
 ---
 
-powerdns_admin_version: 0.2.5
+powerdns_admin_version: 0.3.0
 powerdns_admin_user: powerdns-admin
 
 powerdns_admin_run_uid: "{{ powerdns_admin_user_info.uid if (powerdns_admin_user_info is defined) else powerdns_admin_user }}"
