@@ -1,8 +1,8 @@
 ---
 
 - name: Restart powerdns container
-  docker_container:
+  community.docker.docker_container:
     name: "{{ powerdns_container_name }}"
     state: started
-    restart: yes
+    restart: true
   listen: restart-powerdns

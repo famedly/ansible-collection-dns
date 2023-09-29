@@ -11,7 +11,8 @@ powerdns_admin_data_path: "/opt/powerdns-admin/data"
 
 powerdns_admin_container_image_name: "docker.io/ngoduykhanh/powerdns-admin"
 powerdns_admin_container_image_tag: ~
-powerdns_admin_container_image_ref: "{{ powerdns_admin_container_image_name }}:{{ powerdns_admin_container_image_tag | default('v' + powerdns_admin_version, True) }}"
+powerdns_admin_container_image_ref: >
+  {{ powerdns_admin_container_image_name }}:{{ powerdns_admin_container_image_tag | default('v' + powerdns_admin_version, True) }}
 powerdns_admin_container_name: powerdns-admin
 powerdns_admin_container_extra_volumes: []
 powerdns_admin_container_extra_environment: {}

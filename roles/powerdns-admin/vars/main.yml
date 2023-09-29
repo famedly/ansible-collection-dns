@@ -7,8 +7,8 @@ powerdns_admin_container_base_environment:
   SQLALCHEMY_DATABASE_URI: >-
     {{ powerdns_admin_database_type + '://'
     + powerdns_admin_database_user
-    + ( ':' + powerdns_admin_database_password if powerdns_admin_database_password else '' ) + '@'
-    + powerdns_admin_database_host|default('', True) + '/'
+    + (':' + powerdns_admin_database_password if powerdns_admin_database_password else '') + '@'
+    + powerdns_admin_database_host | default('', True) + '/'
     + powerdns_admin_database_name
     + ('?host=' + powerdns_admin_database_socket) if powerdns_admin_database_socket else '' }}
 powerdns_admin_container_base_labels:

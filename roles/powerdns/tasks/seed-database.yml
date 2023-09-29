@@ -10,12 +10,13 @@
   register: postgres_tables_present
 
 - name: Initialize postgres database
-  when: not postgres_tables_present or postgres_tables_present.rowcount|int == 0
+  when: not postgres_tables_present or postgres_tables_present.rowcount | int == 0
   block:
     - name: Copy initial database schema to target server
-      copy:
+      ansible.builtin.copy:
         src: schema.pgsql.sql
         dest: /tmp/powerdns_db_schema.sql
+        mode: "0600"
 
     # `as_single_query` because otherwise, empty lines are failing queries
     - name: Import database scheme into postgres
@@ -28,6 +29,6 @@
         login_unix_socket: "{{ powerdns_backend_postgres_host if powerdns_backend_postgres_host[0] == '/' else omit }}"
 
     - name: Wipe file containing initial database schema
-      file:
+      ansible.builtin.file:
         path: /tmp/powerdns_db_schema.sql
         state: absent

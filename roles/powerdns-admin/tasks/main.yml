@@ -1,14 +1,14 @@
 ---
 
 - name: Ensure system user '{{ powerdns_admin_user }}' for powerdns exists
-  user:
+  ansible.builtin.user:
     name: "{{ powerdns_admin_user }}"
     state: present
-    system: yes
+    system: true
   register: powerdns_admin_user_info
 
 - name: Ensure base path '{{ powerdns_admin_base_path }}' exists
-  file:
+  ansible.builtin.file:
     path: "{{ powerdns_admin_base_path }}"
     state: directory
     owner: "{{ powerdns_admin_run_uid }}"
@@ -16,7 +16,7 @@
     mode: "0750"
 
 - name: Ensure data path '{{ powerdns_admin_data_path }}' exists
-  file:
+  ansible.builtin.file:
     path: "{{ powerdns_admin_data_path }}"
     state: directory
     owner: "{{ powerdns_admin_run_uid }}"
@@ -24,7 +24,7 @@
     mode: "0750"
 
 - name: Ensure docker image is available locally
-  docker_image:
+  community.docker.docker_image:
     name: "{{ powerdns_admin_container_image_ref }}"
     state: present
     source: pull
@@ -35,7 +35,7 @@
   delay: 5
 
 - name: Ensure docker container with name '{{ powerdns_admin_container_name }}' is started
-  docker_container:
+  community.docker.docker_container:
     name: "{{ powerdns_admin_container_name }}"
     image: "{{ powerdns_admin_container_image_ref }}"
     volumes: "{{ powerdns_admin_container_volumes }}"
@@ -47,7 +47,7 @@
     restart_policy: "{{ powerdns_admin_container_restart_policy }}"
 
 - name: Create unique index on setting table
-  postgresql_idx:
+  community.postgresql.postgresql_idx:
     login_host: "{{ powerdns_admin_database_socket | default(powerdns_admin_database_host, True) }}"
     login_user: "{{ powerdns_admin_database_user }}"
     login_password: "{{ powerdns_admin_database_password }}"
@@ -56,20 +56,25 @@
     columns: name
     name: setting_name_uniq
     type: btree
-    unique: yes
+    unique: true
   when: powerdns_database_type == 'postgres' and powerdns_admin_database_socket
   register: powerdns_database_idx_created
   until: powerdns_database_idx_created is success
   delay: 2
   retries: 5
- 
+
 - name: Configure powerdns-admin
-  postgresql_query:
+  community.postgresql.postgresql_query:
     login_host: "{{ powerdns_admin_database_socket | default(powerdns_admin_database_host, True) }}"
     login_user: "{{ powerdns_admin_database_user }}"
     login_password: "{{ powerdns_admin_database_password }}"
     db: "{{ powerdns_admin_database_name }}"
-    query: "INSERT INTO setting ( name, value ) VALUES ( '{{ item.key }}', '{{ item.value }}' ) ON CONFLICT ( name ) DO UPDATE SET value = '{{ item.value }}' WHERE setting.name = '{{ item.key }}' and setting.value != '{{ item.value }}';"
+    query: >-
+      INSERT INTO setting ( name, value )
+      VALUES ( '{{ item.key }}', '{{ item.value }}' )
+      ON CONFLICT ( name )
+      DO UPDATE SET value = '{{ item.value }}'
+      WHERE setting.name = '{{ item.key }}' and setting.value != '{{ item.value }}';
   when: powerdns_database_type == 'postgres' and item.value is not none
   loop: "{{ powerdns_admin_settings | dict2items }}"
   loop_control:

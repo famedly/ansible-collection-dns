@@ -1,7 +1,7 @@
 ---
-
+# yamllint disable rule:line-length
 - name: Configure account '{{ powerdns_account_slug }}'
-  postgresql_query:
+  community.postgresql.postgresql_query:
     login_host: "{{ powerdns_account_database_host }}"
     login_user: "{{ powerdns_account_database_user }}"
     login_password: "{{ powerdns_account_database_password }}"

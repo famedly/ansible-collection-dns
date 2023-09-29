@@ -1,7 +1,7 @@
 ---
-
+# yamllint disable rule:line-length
 - name: Configure zone '{{ powerdns_zone_name }}'
-  postgresql_query:
+  community.postgresql.postgresql_query:
     login_host: "{{ powerdns_zone_database_host }}"
     login_user: "{{ powerdns_zone_database_user }}"
     login_password: "{{ powerdns_zone_database_password }}"
@@ -18,14 +18,15 @@
   when: powerdns_zone_database_type == 'postgres'
   register: zone_upsert_result
 
+  # yamllint enable rule:line-length
 - name: Extract internal domain_id for zone
-  set_fact:
+  ansible.builtin.set_fact:
     zone_domain_id: "{{ zone_upsert_result.query_result[0].id }}"
 
 # TODO: this breaks encoding arrays, which are encoded by
 # using multiple (domain_id, kind) entries with different values
 - name: Create unique index (domain_id, kind) on domainmetadata table
-  postgresql_idx:
+  community.postgresql.postgresql_idx:
     login_host: "{{ powerdns_zone_database_host }}"
     login_user: "{{ powerdns_zone_database_user }}"
     login_password: "{{ powerdns_zone_database_password }}"
@@ -36,11 +37,11 @@
       - kind
     name: domainmetadata_domain_kind_uniq
     type: btree
-    unique: yes
+    unique: true
   when: powerdns_zone_database_type == 'postgres'
 
 - name: Configure zone metadata for '{{ powerdns_zone_name }}'
-  postgresql_query:
+  community.postgresql.postgresql_query:
     login_host: "{{ powerdns_zone_database_host }}"
     login_user: "{{ powerdns_zone_database_user }}"
     login_password: "{{ powerdns_zone_database_password }}"
@@ -56,7 +57,7 @@
   when: powerdns_zone_database_type == 'postgres'
 
 - name: Check if SOA record for zone '{{ powerdns_zone_name }}' exists
-  postgresql_query:
+  community.postgresql.postgresql_query:
     login_host: "{{ powerdns_zone_database_host }}"
     login_user: "{{ powerdns_zone_database_user }}"
     login_password: "{{ powerdns_zone_database_password }}"
@@ -70,7 +71,7 @@
   register: zone_records_type_soa
 
 - name: Configure SOA record for zone '{{ powerdns_zone_name }}'
-  postgresql_query:
+  community.postgresql.postgresql_query:
     login_host: "{{ powerdns_zone_database_host }}"
     login_user: "{{ powerdns_zone_database_user }}"
     login_password: "{{ powerdns_zone_database_password }}"

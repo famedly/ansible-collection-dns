@@ -1,14 +1,14 @@
 ---
 
 - name: Ensure system user '{{ powerdns_user }}' for powerdns exists
-  user:
+  ansible.builtin.user:
     name: "{{ powerdns_user }}"
     state: present
-    system: yes
+    system: true
   register: powerdns_user_info
 
 - name: Ensure base path '{{ powerdns_base_path }}' exists
-  file:
+  ansible.builtin.file:
     path: "{{ powerdns_base_path }}"
     state: directory
     owner: "{{ powerdns_run_uid }}"
@@ -16,7 +16,7 @@
     mode: "0750"
 
 - name: Ensure config path '{{ powerdns_base_path }}' exists
-  file:
+  ansible.builtin.file:
     path: "{{ powerdns_config_path }}"
     state: directory
     owner: "{{ powerdns_run_uid }}"
@@ -24,7 +24,7 @@
     mode: "0750"
 
 - name: Ensure path '{{ powerdns_control_socket_path }}' for powerdns' control socket exists
-  file:
+  ansible.builtin.file:
     path: "{{ powerdns_control_socket_path }}"
     state: directory
     owner: "{{ powerdns_run_uid }}"
@@ -32,16 +32,16 @@
     mode: "0750"
 
 - name: Ensure config file is templated
-  template:
+  ansible.builtin.template:
     src: pdns.conf.j2
     dest: "{{ powerdns_config_file }}"
     owner: "{{ powerdns_run_uid }}"
     group: "{{ powerdns_run_gid }}"
     mode: "0640"
-  notify: restart-powerdns
+  notify: Restart-powerdns
 
 - name: Ensure docker image is available locally
-  docker_image:
+  community.docker.docker_image:
     name: "{{ powerdns_container_image_ref }}"
     state: present
     source: pull
@@ -52,10 +52,10 @@
   delay: 5
 
 - name: Make sure the database is populated with the needed tables
-  import_tasks: seed-database.yml
+  ansible.builtin.import_tasks: seed-database.yml
 
 - name: Ensure docker container with name '{{ powerdns_container_name }}' is started
-  docker_container:
+  community.docker.docker_container:
     name: "{{ powerdns_container_name }}"
     image: "{{ powerdns_container_image_ref }}"
     volumes: "{{ powerdns_container_volumes }}"
