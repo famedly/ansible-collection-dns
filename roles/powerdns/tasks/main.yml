@@ -38,7 +38,7 @@
     owner: "{{ powerdns_run_uid }}"
     group: "{{ powerdns_run_gid }}"
     mode: "0640"
-  notify: Restart-powerdns
+  notify: restart-powerdns
 
 - name: Ensure docker image is available locally
   community.docker.docker_image:
