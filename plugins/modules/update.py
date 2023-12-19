@@ -163,7 +163,7 @@ def main():
     tsig_keyring = get_keyring(module.params["tsig_name"], module.params["tsig_key"])
     if not module.check_mode:
         (success, reason) = send_dns_update_message(
-            zone, tsig_keyring, diff_set, server_ip
+            zone, tsig_keyring, module.params["tsig_algo"], diff_set, server_ip
         )
         if not success:
             failed = True

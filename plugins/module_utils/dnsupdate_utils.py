@@ -79,10 +79,13 @@ def get_resource_record(
 def send_dns_update_message(
     zone: str,
     keyring: dict[name.Name, bytes],
+    keyalgorithm: name.Name,
     rr_set: list[ResourceRecord],
     server_ip: str,
 ) -> tuple[bool, Union[str, None]]:
-    updateMessage = update.UpdateMessage(zone, keyring=keyring)
+    updateMessage = update.UpdateMessage(
+        zone, keyring=keyring, keyalgorithm=keyalgorithm
+    )
     for rr in rr_set.add:
         updateMessage.add(rr.name, rr.ttl, rr.typ, rr.content)
     for rr in rr_set.delete:
