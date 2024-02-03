@@ -24,10 +24,13 @@ class ResourceRecord:
     ttl: int = 3600
 
     def __eq__(self, other):
-        return (
+        return other.content ? (
             self.name == other.name
             and self.typ == other.typ
             and self.content == other.content
+        ) : (
+            self.name == other.name
+            and self.typ == other.typ
         )
 
 
