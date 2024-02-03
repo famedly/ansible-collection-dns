@@ -8,7 +8,7 @@ import ipaddress
 from dataclasses import dataclass, field
 from socket import create_connection
 
-from dns import name, message, rcode, resolver, tsigkeyring, rrset, update, query
+from dns import name, rdatatype, message, rcode, resolver, tsigkeyring, rrset, update, query
 
 from typing import Union
 
@@ -33,6 +33,12 @@ class ResourceRecord:
             and self.typ == other.typ
         )
 
+    def to_sortable_tuple(self) -> [str, int, any]:
+        return (
+                "." + ".".join(reversed(self.name.lower().split("."))),a
+                rdatatype.from_text(self.typ.upper()),
+                self.content
+        )
 
 @dataclass(frozen=True)
 class ChangeSet:
@@ -183,3 +189,6 @@ def make_rr_absolute(rr: dict[str, any], zone: name.Name) -> dict[str, any]:
     if not rname.is_subdomain(zone):
         rr["name"] = ".".join([rr["name"], str(zone)])
     return rr
+
+def sort_rr_set(rr_set: list[ResourceRecord]) -> listResourceRecord]:
+    return rr_set.sort(key = lambda rr: rr.to_sortable_tuple())

@@ -173,7 +173,7 @@ def main():
         before="\n".join(
             [
                 "\t\t".join([r.name, r.typ, r.content])
-                for r in existing_rr_set
+                for r in sort_rr_set(existing_rr_set)
                 if r not in diff_set.add
             ]
         )
@@ -181,7 +181,7 @@ def main():
         after="\n".join(
             [
                 "\t\t".join([r.name, r.typ, r.content])
-                for r in target_state
+                for r in sort_rr_set(target_state)
                 if r and r not in diff_set.delete
             ]
         )
