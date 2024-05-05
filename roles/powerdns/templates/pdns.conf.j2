@@ -276,6 +276,10 @@ autosecondary={{ 'yes' if powerdns_config_autosecondary else 'no' }}
 #
 default-soa-content={{ powerdns_config_default_soa_name }} admin.@ 0 {{ powerdns_config_default_soa_refresh_interval_seconds }} {{ powerdns_config_default_soa_retry_interval_seconds }} {{ powerdns_config_default_soa_expire_seconds }} {{ powerdns_config_default_soa_minimum_ttl }}
 
+{% if powerdns_config_default_soa_edit | default(false) %}
+default-soa-edit={{ powerdns_config_default_soa_edit }}
+{% endif %}
+
 #################################
 # soa-serial-offset	Make sure that no SOA serial is less than this number
 #
