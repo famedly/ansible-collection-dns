@@ -156,10 +156,10 @@ local-port={{ powerdns_config_local_port | int }}
 loglevel={{ powerdns_config_loglevel | int }}
 
 #################################
-# master	Act as a master
+# primary	Act as a primary
 #
-#master=no
-primary={{ 'yes' if powerdns_config_operation_mode == 'primary' else 'no' }}
+#primary=no
+primary={{ 'yes' if (powerdns_config_operation_mode == 'primary') else 'no' }}
 
 #################################
 # max-queue-length	Maximum queuelength before considering situation lost
@@ -254,17 +254,24 @@ setuid={{ powerdns_config_setuid }}
 # skip-cname=no
 
 #################################
-# slave	Act as a slave
+# secondary	Act as a secondary
 #
-#slave=no
-secondary={{ 'no' if powerdns_config_operation_mode == 'primary' else 'yes' }}
+#secondary=no
+secondary={{ 'no' if (powerdns_config_operation_mode == 'primary') else 'yes' }}
 
 autosecondary={{ 'yes' if powerdns_config_autosecondary else 'no' }}
 
 #################################
-# slave-cycle-interval	Reschedule failed SOA serial checks once every .. seconds
+# xfr-cycle-interval	Reschedule failed SOA serial checks once every .. seconds
 #
-# slave-cycle-interval=60
+# xfr-cycle-interval=60
+{% if powerdns_config_xfr_cycle_interval %}
+xfr-cycle-interval={{ powerdns_config_xfr_cycle_interval }}
+{% endif %}
+
+{% if powerdns_config_secondary_do_renotify %}
+secondary-do-renotify={{ 'yes' if powerdns_config_secondary_do_renotify else 'no' }}
+{% endif %}
 
 #################################
 # smtpredirector	Our smtpredir MX host
