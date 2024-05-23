@@ -1,6 +1,6 @@
 ---
 
-powerdns_version: 4.8.3-r2
+powerdns_version: 4.9.0-r3
 powerdns_user: powerdns
 
 powerdns_run_uid: "{{ powerdns_user_info.uid if (powerdns_user_info is defined) else powerdns_user }}"
