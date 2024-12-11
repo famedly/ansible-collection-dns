@@ -27,7 +27,11 @@ class ResourceRecord:
         return (
             self.name == other.name
             and self.typ == other.typ
-            and self.content == other.content
+            and (
+                self.content == None
+                or other.content == None
+                or self.content == other.content
+            )
         )
 
 
@@ -48,7 +52,7 @@ def get_diff_rr_set(
     if mode == "present":
         changeset.add.extend([rr for rr in rr_set if rr not in existing_rr_set])
     elif mode == "absent":
-        changeset.delete.extend([rr for rr in rr_set if rr in existing_rr_set])
+        changeset.delete.extend([rr for rr in existing_rr_set if rr in rr_set])
     elif mode == "exact":
         changeset.add.extend([rr for rr in rr_set if rr not in existing_rr_set])
         changeset.delete.extend([rr for rr in existing_rr_set if rr not in rr_set])

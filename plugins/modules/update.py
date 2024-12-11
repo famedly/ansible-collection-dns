@@ -117,7 +117,7 @@ def main():
                 options=_(
                     type=_(type="str", required=True),
                     name=_(type="str", required=True),
-                    content=_(type="str", required=True),
+                    content=_(type="str", required=False),
                     ttl=_(type="int", required=False, default=3600),
                 ),
             ),
@@ -130,6 +130,12 @@ def main():
         ),
         supports_check_mode=True,
     )
+
+    # https://github.com/ansible/ansible/issues/82603
+    if module.params["state"] != "absent" and any(
+        rr["content"] is None for rr in module.params["rr_set"]
+    ):
+        module.fail_json(msg="content is required if state is not absent")
 
     result = _(changed=False, diff={}, msg="")
 
@@ -148,9 +154,9 @@ def main():
     server_ip: str = primary_master_to_ip_literal(module.params["primary_master"])
     if not server_ip:
         failed = True
-        result[
-            "msg"
-        ] = f"No reachable IP or IPv4 address found for {module.params['primary_master']}, connection probing done with port 53/tcp."
+        result["msg"] = (
+            f"No reachable IP or IPv4 address found for {module.params['primary_master']}, connection probing done with port 53/tcp."
+        )
         module.fail_json(**result)
 
     # Get existing RRs first
