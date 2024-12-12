@@ -188,7 +188,7 @@ def main():
             [
                 "\t\t".join([r.name, r.typ, r.content])
                 for r in target_state
-                if r and r not in diff_set.delete
+                if r and r.content is not None and r not in diff_set.delete
             ]
         )
         + "\n",
