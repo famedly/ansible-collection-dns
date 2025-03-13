@@ -57,7 +57,7 @@
     name: setting_name_uniq
     type: btree
     unique: true
-  when: powerdns_database_type == 'postgres' and powerdns_admin_database_socket
+  when: powerdns_database_type == 'postgresql' and powerdns_admin_database_socket
   register: powerdns_database_idx_created
   until: powerdns_database_idx_created is success
   delay: 2
@@ -75,7 +75,7 @@
       ON CONFLICT ( name )
       DO UPDATE SET value = '{{ item.value }}'
       WHERE setting.name = '{{ item.key }}' and setting.value != '{{ item.value }}';
-  when: powerdns_database_type == 'postgres' and item.value is not none
+  when: powerdns_database_type == 'postgresql' and item.value is not none
   loop: "{{ powerdns_admin_settings | dict2items }}"
   loop_control:
     label: "{{ item.key }}"
