@@ -11,7 +11,7 @@ databases (including the default sqlite) is currently not supported.
 Configuring the database is done like this:
 
 ```yaml
-powerdns_admin_database_type: postgres
+powerdns_admin_database_type: postgresql
 powerdns_admin_database_user: pdns-admin
 powerdns_admin_database_password: your_password_here
 powerdns_admin_database_name: pdns-admin
