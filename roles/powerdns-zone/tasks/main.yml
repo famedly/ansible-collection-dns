@@ -23,21 +23,14 @@
   ansible.builtin.set_fact:
     zone_domain_id: "{{ zone_upsert_result.query_result[0].id }}"
 
-# TODO: this breaks encoding arrays, which are encoded by
-# using multiple (domain_id, kind) entries with different values
-- name: Create unique index (domain_id, kind) on domainmetadata table
+- name: Remove unique index (domain_id, kind) on domainmetadata table
   community.postgresql.postgresql_idx:
     login_host: "{{ powerdns_zone_database_host }}"
     login_user: "{{ powerdns_zone_database_user }}"
     login_password: "{{ powerdns_zone_database_password }}"
     db: "{{ powerdns_zone_database_name }}"
-    table: domainmetadata
-    columns:
-      - domain_id
-      - kind
     name: domainmetadata_domain_kind_uniq
-    type: btree
-    unique: true
+    state: absent
   when: powerdns_zone_database_type == 'postgres'
 
 - name: Configure zone metadata for '{{ powerdns_zone_name }}'
@@ -47,13 +40,16 @@
     login_password: "{{ powerdns_zone_database_password }}"
     db: "{{ powerdns_zone_database_name }}"
     query: >-
-      INSERT INTO domainmetadata (domain_id, kind, content)
-      VALUES ( '{{ zone_domain_id }}', '{{ item.key }}', '{{ item.value }}' )
-      ON CONFLICT ( domain_id, kind )
-      DO UPDATE SET "content" = '{{ item.value }}'
-      WHERE domainmetadata.domain_id = '{{ zone_domain_id }}' and domainmetadata.kind = '{{ item.key }}' and domainmetadata.content != '{{ item.value }}';
-  loop: "{{ powerdns_zone_metadata | dict2items }}"
-  loop_control: { label: "{{ item.key }} = {{ item.value }}" }
+      WITH new(d, k, v) AS (
+        SELECT %s::bigint d, key k, a.value v FROM json_each(%s::json)
+        LEFT JOIN json_array_elements_text(CASE json_typeof(value) WHEN 'array' THEN value WHEN 'null' THEN json_array() ELSE json_array(value) END) a ON true
+      )
+      MERGE INTO domainmetadata USING new ON (domain_id, kind, content) = (d, k, v)
+      WHEN NOT MATCHED THEN INSERT (domain_id, kind, content) VALUES (d, k, v)
+      WHEN NOT MATCHED BY SOURCE AND EXISTS (SELECT 1 FROM new WHERE (d, k) = (domain_id, kind)) THEN DELETE;
+    positional_args:
+      - "{{ zone_domain_id }}"
+      - "{{ powerdns_zone_metadata | to_json }}"
   when: powerdns_zone_database_type == 'postgres'
 
 - name: Check if SOA record for zone '{{ powerdns_zone_name }}' exists
