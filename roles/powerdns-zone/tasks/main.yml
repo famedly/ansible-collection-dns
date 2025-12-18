@@ -1,5 +1,4 @@
 ---
-# yamllint disable rule:line-length
 - name: Configure zone '{{ powerdns_zone_name }}'
   community.postgresql.postgresql_query:
     login_host: "{{ powerdns_zone_database_host }}"
@@ -7,18 +6,19 @@
     login_password: "{{ powerdns_zone_database_password }}"
     db: "{{ powerdns_zone_database_name }}"
     query: >-
-      INSERT INTO domains (name, {{ 'master,' if powerdns_zone_master_ip else '' }} type, account)
-      VALUES ( '{{ powerdns_zone_name }}', {{ "'" + powerdns_zone_master_ip + "'," if powerdns_zone_master_ip else '' }} '{{ powerdns_zone_type }}', '{{ powerdns_zone_account }}' )
-      ON CONFLICT ( name )
-      DO UPDATE SET "type" = '{{ powerdns_zone_type }}', "account" = '{{ powerdns_zone_account }}'
-      WHERE domains.name = '{{ powerdns_zone_name }}' and
-        (domains.type != '{{ powerdns_zone_type }}'
-        or domains.account != '{{ powerdns_zone_account }}');
-      SELECT * FROM domains WHERE name = '{{ powerdns_zone_name }}';
+      INSERT INTO domains (name, master, type, account)
+      VALUES (%(name)s, {{ '%(master_ip)s' if powerdns_zone_master_ip else 'DEFAULT' }}, %(type)s, %(account)s)
+      ON CONFLICT (name) DO UPDATE SET type = excluded.type, account = excluded.account
+        WHERE (domains.type, domains.account) != (excluded.type, excluded.account);
+      SELECT * FROM domains WHERE name = %(name)s;
+    named_args:
+      name: "{{ powerdns_zone_name }}"
+      master_ip: "{{ powerdns_zone_master_ip }}"
+      type: "{{ powerdns_zone_type }}"
+      account: "{{ powerdns_zone_account }}"
   when: powerdns_zone_database_type == 'postgres'
   register: zone_upsert_result
 
-  # yamllint enable rule:line-length
 - name: Extract internal domain_id for zone
   ansible.builtin.set_fact:
     zone_domain_id: "{{ zone_upsert_result.query_result[0].id }}"
@@ -60,9 +60,12 @@
     db: "{{ powerdns_zone_database_name }}"
     query: >-
       SELECT * FROM records
-      WHERE records.domain_id = '{{ zone_domain_id }}'
-        and records.name = '{{ powerdns_zone_name }}'
+      WHERE records.domain_id = %s
+        and records.name = %s
         and records.type = 'SOA';
+    positional_args:
+      - "{{ zone_domain_id }}"
+      - "{{ powerdns_zone_name }}"
   changed_when: false
   register: zone_records_type_soa
 
@@ -74,5 +77,9 @@
     db: "{{ powerdns_zone_database_name }}"
     query: >-
       INSERT INTO records (domain_id, name, type, content, ttl, prio, disabled, auth)
-      VALUES ( '{{ zone_domain_id }}', '{{ powerdns_zone_name }}', 'SOA', '{{ powerdns_zone_soa_content }}', 3600, 0, false, true)
+      VALUES (%s, %s, 'SOA', %s, 3600, 0, false, true);
+    positional_args:
+      - "{{ zone_domain_id }}"
+      - "{{ powerdns_zone_name }}"
+      - "{{ powerdns_zone_soa_content }}"
   when: powerdns_zone_database_type == 'postgres' and zone_records_type_soa.rowcount|int == 0

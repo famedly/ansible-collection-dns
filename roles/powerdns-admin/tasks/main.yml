@@ -70,11 +70,12 @@
     login_password: "{{ powerdns_admin_database_password }}"
     db: "{{ powerdns_admin_database_name }}"
     query: >-
-      INSERT INTO setting ( name, value )
-      VALUES ( '{{ item.key }}', '{{ item.value }}' )
-      ON CONFLICT ( name )
-      DO UPDATE SET value = '{{ item.value }}'
-      WHERE setting.name = '{{ item.key }}' and setting.value != '{{ item.value }}';
+      INSERT INTO setting (name, value) VALUES (%s, %s)
+      ON CONFLICT (name) DO UPDATE SET value = excluded.value
+        WHERE setting.value != excluded.value;
+    positional_args:
+      - "{{ item.key }}"
+      - "{{ item.value }}"
   when: powerdns_database_type == 'postgres' and item.value is not none
   loop: "{{ powerdns_admin_settings | dict2items }}"
   loop_control:
