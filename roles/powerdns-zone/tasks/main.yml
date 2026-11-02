@@ -4,7 +4,7 @@
     login_host: "{{ powerdns_zone_database_host }}"
     login_user: "{{ powerdns_zone_database_user }}"
     login_password: "{{ powerdns_zone_database_password }}"
-    db: "{{ powerdns_zone_database_name }}"
+    login_db: "{{ powerdns_zone_database_name }}"
     query: >-
       INSERT INTO domains (name, master, type, account)
       VALUES (%(name)s, {{ '%(master_ip)s' if powerdns_zone_master_ip else 'DEFAULT' }}, %(type)s, %(account)s)
@@ -28,7 +28,7 @@
     login_host: "{{ powerdns_zone_database_host }}"
     login_user: "{{ powerdns_zone_database_user }}"
     login_password: "{{ powerdns_zone_database_password }}"
-    db: "{{ powerdns_zone_database_name }}"
+    login_db: "{{ powerdns_zone_database_name }}"
     name: domainmetadata_domain_kind_uniq
     state: absent
   when: powerdns_zone_database_type == 'postgres'
@@ -38,7 +38,7 @@
     login_host: "{{ powerdns_zone_database_host }}"
     login_user: "{{ powerdns_zone_database_user }}"
     login_password: "{{ powerdns_zone_database_password }}"
-    db: "{{ powerdns_zone_database_name }}"
+    login_db: "{{ powerdns_zone_database_name }}"
     query: >-
       WITH new(d, k, v) AS (
         SELECT %s::bigint d, key k, a.value v FROM json_each(%s::json)
@@ -57,7 +57,7 @@
     login_host: "{{ powerdns_zone_database_host }}"
     login_user: "{{ powerdns_zone_database_user }}"
     login_password: "{{ powerdns_zone_database_password }}"
-    db: "{{ powerdns_zone_database_name }}"
+    login_db: "{{ powerdns_zone_database_name }}"
     query: >-
       SELECT * FROM records
       WHERE records.domain_id = %s
@@ -74,7 +74,7 @@
     login_host: "{{ powerdns_zone_database_host }}"
     login_user: "{{ powerdns_zone_database_user }}"
     login_password: "{{ powerdns_zone_database_password }}"
-    db: "{{ powerdns_zone_database_name }}"
+    login_db: "{{ powerdns_zone_database_name }}"
     query: >-
       INSERT INTO records (domain_id, name, type, content, ttl, prio, disabled, auth)
       VALUES (%s, %s, 'SOA', %s, 3600, 0, false, true);

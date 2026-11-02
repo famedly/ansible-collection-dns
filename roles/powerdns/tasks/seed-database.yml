@@ -2,7 +2,7 @@
 
 - name: Check if postgres database needs to be seeded
   community.postgresql.postgresql_query:
-    db: "{{ powerdns_backend_postgres_dbname }}"
+    login_db: "{{ powerdns_backend_postgres_dbname }}"
     query: "SELECT * FROM information_schema.tables WHERE table_schema = 'public';"
     login_user: "{{ powerdns_backend_postgres_user }}"
     login_password: "{{ powerdns_backend_postgres_password }}"
@@ -21,7 +21,7 @@
     # `as_single_query` because otherwise, empty lines are failing queries
     - name: Import database scheme into postgres
       community.postgresql.postgresql_query:
-        db: "{{ powerdns_backend_postgres_dbname }}"
+        login_db: "{{ powerdns_backend_postgres_dbname }}"
         path_to_script: /tmp/powerdns_db_schema.sql
         as_single_query: true
         login_user: "{{ powerdns_backend_postgres_user }}"

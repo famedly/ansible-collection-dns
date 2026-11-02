@@ -5,7 +5,7 @@
     login_host: "{{ powerdns_account_database_host }}"
     login_user: "{{ powerdns_account_database_user }}"
     login_password: "{{ powerdns_account_database_password }}"
-    db: "{{ powerdns_account_database_name }}"
+    login_db: "{{ powerdns_account_database_name }}"
     query: >-
       INSERT INTO account (name, description, contact, mail) VALUES (%s, %s, %s, %s)
       ON CONFLICT (name) DO UPDATE SET description = excluded.description, contact = excluded.contact, mail = excluded.mail
@@ -15,4 +15,4 @@
       - "{{ powerdns_account_description }}"
       - "{{ powerdns_account_contact_person }}"
       - "{{ powerdns_account_contact_email }}"
-  when: powerdns_account_database_type == 'postgres' and item.value is not none
+  when: powerdns_account_database_type == 'postgres'

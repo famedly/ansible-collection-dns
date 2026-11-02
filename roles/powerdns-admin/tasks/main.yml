@@ -51,13 +51,13 @@
     login_host: "{{ powerdns_admin_database_socket | default(powerdns_admin_database_host, True) }}"
     login_user: "{{ powerdns_admin_database_user }}"
     login_password: "{{ powerdns_admin_database_password }}"
-    db: "{{ powerdns_admin_database_name }}"
+    login_db: "{{ powerdns_admin_database_name }}"
     table: setting
     columns: name
     name: setting_name_uniq
     type: btree
     unique: true
-  when: powerdns_database_type == 'postgres' and powerdns_admin_database_socket
+  when: powerdns_database_type == 'postgres' and (powerdns_admin_database_socket | default('', true)) | length > 0
   register: powerdns_database_idx_created
   until: powerdns_database_idx_created is success
   delay: 2
@@ -68,7 +68,7 @@
     login_host: "{{ powerdns_admin_database_socket | default(powerdns_admin_database_host, True) }}"
     login_user: "{{ powerdns_admin_database_user }}"
     login_password: "{{ powerdns_admin_database_password }}"
-    db: "{{ powerdns_admin_database_name }}"
+    login_db: "{{ powerdns_admin_database_name }}"
     query: >-
       INSERT INTO setting (name, value) VALUES (%s, %s)
       ON CONFLICT (name) DO UPDATE SET value = excluded.value
