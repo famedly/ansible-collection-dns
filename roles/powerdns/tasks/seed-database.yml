@@ -18,12 +18,10 @@
         dest: /tmp/powerdns_db_schema.sql
         mode: "0600"
 
-    # `as_single_query` because otherwise, empty lines are failing queries
     - name: Import database scheme into postgres
-      community.postgresql.postgresql_query:
+      community.postgresql.postgresql_script:
         login_db: "{{ powerdns_backend_postgres_dbname }}"
-        path_to_script: /tmp/powerdns_db_schema.sql
-        as_single_query: true
+        path: /tmp/powerdns_db_schema.sql
         login_user: "{{ powerdns_backend_postgres_user }}"
         login_password: "{{ powerdns_backend_postgres_password }}"
         login_unix_socket: "{{ powerdns_backend_postgres_host if powerdns_backend_postgres_host[0] == '/' else omit }}"
