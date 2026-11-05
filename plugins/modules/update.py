@@ -43,7 +43,7 @@ options:
         type: str
         required: true
     rr_set:
-        description: A list of dicts of the form {name, type, content, ?ttl} describing the set of resource records to modify. Note that the content _always_ needs to be fully qualified or idempotency can not be guaranteed, the module will not attempt to make names in the content absolute.
+        description: A list of dicts of the form {name, type, content, ?ttl} describing the set of resource records to modify. Note that the content _always_ needs to be fully qualified or idempotency can not be guaranteed, the module will not attempt to make names in the content absolute. Omit `content` with `state=absent` to match any content.
         type: list[dict[str, any]]
         required: true
     tsig_key:
@@ -117,7 +117,7 @@ def main():
                 options=_(
                     type=_(type="str", required=True),
                     name=_(type="str", required=True),
-                    content=_(type="str", required=False),
+                    content=_(type="str", required=False, default=""),
                     ttl=_(type="int", required=False, default=3600),
                 ),
             ),
@@ -132,8 +132,9 @@ def main():
     )
 
     # https://github.com/ansible/ansible/issues/82603
+    # Empty content means "match any content", because 2.20 coerces omitted str options to "".
     if module.params["state"] != "absent" and any(
-        rr["content"] is None for rr in module.params["rr_set"]
+        rr["content"] in (None, "") for rr in module.params["rr_set"]
     ):
         module.fail_json(msg="content is required if state is not absent")
 
@@ -188,7 +189,8 @@ def main():
             [
                 "\t\t".join([r.name, r.typ, r.content])
                 for r in target_state
-                if r and r.content is not None and r not in diff_set.delete
+                # Empty content means "match any content", because 2.20 coerces omitted str options to "".
+                if r and r.content not in (None, "") and r not in diff_set.delete
             ]
         )
         + "\n",

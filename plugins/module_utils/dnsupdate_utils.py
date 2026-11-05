@@ -27,9 +27,10 @@ class ResourceRecord:
         return (
             self.name == other.name
             and self.typ == other.typ
+            # Empty content means "match any content", because 2.20 coerces omitted str options to "".
             and (
-                self.content == None
-                or other.content == None
+                not self.content
+                or not other.content
                 or self.content == other.content
             )
         )
@@ -163,7 +164,7 @@ def resolve_domain_name(name: str) -> Union[str, None]:
     finally:
         if sock:
             sock.close()
-        return answer
+    return answer
 
 
 def is_ip_literal(ip: str) -> bool:
